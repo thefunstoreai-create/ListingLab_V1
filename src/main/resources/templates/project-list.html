@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Projects</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .top-actions {
+            margin-bottom: 20px;
+        }
+
+        .project-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .project-card {
+            border: 1px solid #ccc;
+            padding: 16px;
+            width: 280px;
+            border-radius: 8px;
+        }
+
+        .project-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .project-card p {
+            margin: 6px 0;
+        }
+
+        .project-card a {
+            display: inline-block;
+            margin-top: 12px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1>All Projects</h1>
+
+<div class="top-actions">
+    <a href="/projects/new">+ Create New Project</a>
+</div>
+
+<div th:if="${#lists.isEmpty(projects)}">
+    <p>No projects yet.</p>
+</div>
+
+<div class="project-grid" th:if="${!#lists.isEmpty(projects)}">
+    <div class="project-card" th:each="project : ${projects}">
+        <h3 th:text="${project.projectName}">Project Name</h3>
+        <p><strong>Product:</strong> <span th:text="${project.productName}"></span></p>
+        <p><strong>Category:</strong> <span th:text="${project.productCategory}"></span></p>
+        <p><strong>Style:</strong> <span th:text="${project.stylePreset}"></span></p>
+        <p><strong>Notes:</strong> <span th:text="${project.notes}"></span></p>
+        <a th:href="@{'/projects/' + ${project.id}}">Open Project</a>
+    </div>
+</div>
+
+</body>
+</html>
