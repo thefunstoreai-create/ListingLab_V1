@@ -9,12 +9,15 @@ import com.nissens.imaging.entity.StylePreset;
 import com.nissens.imaging.repository.GeneratedImageRepository;
 import com.nissens.imaging.repository.ProductProjectRepository;
 import com.nissens.imaging.repository.ReferenceImageRepository;
+import com.nissens.imaging.service.DemoGenerationService;
 import com.nissens.imaging.service.FileStorageService;
 import com.nissens.imaging.service.PromptBuilderService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/projects")
@@ -25,17 +28,20 @@ public class ProjectController {
     private final GeneratedImageRepository generatedImageRepository;
     private final FileStorageService fileStorageService;
     private final PromptBuilderService promptBuilderService;
+    private final DemoGenerationService demoGenerationService;
 
     public ProjectController(ProductProjectRepository projectRepository,
                              ReferenceImageRepository referenceImageRepository,
                              GeneratedImageRepository generatedImageRepository,
                              FileStorageService fileStorageService,
-                             PromptBuilderService promptBuilderService) {
+                             PromptBuilderService promptBuilderService,
+                             DemoGenerationService demoGenerationService) {
         this.projectRepository = projectRepository;
         this.referenceImageRepository = referenceImageRepository;
         this.generatedImageRepository = generatedImageRepository;
         this.fileStorageService = fileStorageService;
         this.promptBuilderService = promptBuilderService;
+        this.demoGenerationService = demoGenerationService;
     }
 
     @GetMapping
@@ -100,16 +106,21 @@ public class ProjectController {
         ProductProject project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        var refs = referenceImageRepository.findByProject(project);
+        List<ReferenceImage> refs = referenceImageRepository.findByProject(project);
         String prompt = promptBuilderService.buildPrompt(project, refs);
+
+        String demoOutputPath = null;
+        if (!refs.isEmpty()) {
+            demoOutputPath = demoGenerationService.createDemoGeneratedImage(refs.get(0).getFilePath(), id);
+        }
 
         GeneratedImage generatedImage = new GeneratedImage();
         generatedImage.setProject(project);
         generatedImage.setPromptUsed(prompt);
         generatedImage.setStylePreset(project.getStylePreset());
-        generatedImage.setStatus(GenerationStatus.PENDING);
+        generatedImage.setStatus(demoOutputPath != null ? GenerationStatus.COMPLETED : GenerationStatus.FAILED);
         generatedImage.setProviderRequestId("demo-request-" + System.currentTimeMillis());
-        generatedImage.setFilePath(null);
+        generatedImage.setFilePath(demoOutputPath);
 
         generatedImageRepository.save(generatedImage);
 

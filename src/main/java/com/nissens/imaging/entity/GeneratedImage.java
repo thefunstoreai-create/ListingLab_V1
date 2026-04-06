@@ -90,4 +90,24 @@ public class GeneratedImage {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    @Transient
+    public String getWebPath() {
+        if (filePath == null || filePath.isBlank()) {
+            return "";
+        }
+
+        String normalized = filePath.replace("\\", "/");
+        int idx = normalized.indexOf("/uploads/");
+        if (idx >= 0) {
+            return normalized.substring(idx);
+        }
+
+        idx = normalized.indexOf("uploads/");
+        if (idx >= 0) {
+            return "/" + normalized.substring(idx);
+        }
+
+        return "";
+    }
 }
