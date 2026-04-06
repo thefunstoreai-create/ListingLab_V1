@@ -46,8 +46,28 @@
             font-weight: bold;
         }
 
-        .upload-form input[type="file"] {
+        .upload-form input[type="file"],
+        .generate-form input,
+        .generate-form select {
             margin-bottom: 10px;
+        }
+
+        .generate-form {
+            display: flex;
+            gap: 16px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .generate-field {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+
+        .generate-field label {
+            font-weight: bold;
+            margin-bottom: 6px;
         }
 
         button {
@@ -58,6 +78,12 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
+        }
+
+        .delete-button {
+            background: #c0392b;
+            margin-top: 8px;
+            width: 100%;
         }
 
         .thumb-grid,
@@ -105,6 +131,10 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+
+        .inline-form {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -147,6 +177,12 @@
             <div class="thumb-card" th:each="img : ${referenceImages}">
                 <img th:src="${img.webPath}" th:alt="${img.originalFilename}" />
                 <div class="filename" th:text="${img.originalFilename}"></div>
+
+                <form class="inline-form"
+                      th:action="@{'/projects/' + ${project.id} + '/reference-images/' + ${img.id} + '/delete'}"
+                      method="post">
+                    <button type="submit" class="delete-button">Delete</button>
+                </form>
             </div>
         </div>
     </div>
@@ -154,8 +190,22 @@
     <div class="section">
         <h2>Generate Images</h2>
 
-        <form th:action="@{'/projects/' + ${project.id} + '/generate'}" method="post">
-            <button type="submit">Generate Images</button>
+        <form class="generate-form" th:action="@{'/projects/' + ${project.id} + '/generate'}" method="post" th:object="${generateForm}">
+            <div class="generate-field">
+                <label>Image Count</label>
+                <input type="number" th:field="*{imageCount}" min="1" max="8" />
+            </div>
+
+            <div class="generate-field">
+                <label>Style Override</label>
+                <select th:field="*{stylePreset}">
+                    <option th:each="s : ${styles}" th:value="${s}" th:text="${s}"></option>
+                </select>
+            </div>
+
+            <div class="generate-field">
+                <button type="submit">Generate Images</button>
+            </div>
         </form>
 
         <div th:if="${#lists.isEmpty(generatedImages)}" style="margin-top: 14px;">
@@ -171,6 +221,12 @@
                 <p><strong>Created:</strong> <span th:text="${gen.createdAt}"></span></p>
                 <p><strong>Prompt Used:</strong></p>
                 <div class="prompt-box" th:text="${gen.promptUsed}"></div>
+
+                <form class="inline-form"
+                      th:action="@{'/projects/' + ${project.id} + '/generated-images/' + ${gen.id} + '/delete'}"
+                      method="post">
+                    <button type="submit" class="delete-button">Delete</button>
+                </form>
             </div>
         </div>
     </div>

@@ -2,6 +2,8 @@ package com.nissens.imaging.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class ProductProject {
@@ -23,6 +25,12 @@ public class ProductProject {
     private StylePreset stylePreset;
 
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReferenceImage> referenceImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GeneratedImage> generatedImages = new ArrayList<>();
 
     @PrePersist
     public void onCreate() {
@@ -75,5 +83,42 @@ public class ProductProject {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public List<ReferenceImage> getReferenceImages() {
+        return referenceImages;
+    }
+
+    public void setReferenceImages(List<ReferenceImage> referenceImages) {
+        this.referenceImages = referenceImages;
+    }
+
+    public List<GeneratedImage> getGeneratedImages() {
+        return generatedImages;
+    }
+
+    public void setGeneratedImages(List<GeneratedImage> generatedImages) {
+        this.generatedImages = generatedImages;
+    }
+
+    @Transient
+    public String getCoverImagePath() {
+        if (referenceImages != null && !referenceImages.isEmpty()) {
+            for (ReferenceImage img : referenceImages) {
+                if (img.getWebPath() != null && !img.getWebPath().isBlank()) {
+                    return img.getWebPath();
+                }
+            }
+        }
+
+        if (generatedImages != null && !generatedImages.isEmpty()) {
+            for (GeneratedImage img : generatedImages) {
+                if (img.getWebPath() != null && !img.getWebPath().isBlank()) {
+                    return img.getWebPath();
+                }
+            }
+        }
+
+        return "";
     }
 }
