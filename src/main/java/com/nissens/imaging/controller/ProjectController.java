@@ -1,12 +1,16 @@
 package com.nissens.imaging.controller;
 
+import com.nissens.imaging.entity.GeneratedImage;
+import com.nissens.imaging.entity.GenerationStatus;
 import com.nissens.imaging.entity.ProductCategory;
 import com.nissens.imaging.entity.ProductProject;
 import com.nissens.imaging.entity.ReferenceImage;
 import com.nissens.imaging.entity.StylePreset;
+import com.nissens.imaging.repository.GeneratedImageRepository;
 import com.nissens.imaging.repository.ProductProjectRepository;
 import com.nissens.imaging.repository.ReferenceImageRepository;
 import com.nissens.imaging.service.FileStorageService;
+import com.nissens.imaging.service.PromptBuilderService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,21 +22,28 @@ public class ProjectController {
 
     private final ProductProjectRepository projectRepository;
     private final ReferenceImageRepository referenceImageRepository;
+    private final GeneratedImageRepository generatedImageRepository;
     private final FileStorageService fileStorageService;
+    private final PromptBuilderService promptBuilderService;
 
     public ProjectController(ProductProjectRepository projectRepository,
                              ReferenceImageRepository referenceImageRepository,
-                             FileStorageService fileStorageService) {
+                             GeneratedImageRepository generatedImageRepository,
+                             FileStorageService fileStorageService,
+                             PromptBuilderService promptBuilderService) {
         this.projectRepository = projectRepository;
         this.referenceImageRepository = referenceImageRepository;
+        this.generatedImageRepository = generatedImageRepository;
         this.fileStorageService = fileStorageService;
+        this.promptBuilderService = promptBuilderService;
     }
+
     @GetMapping
     public String listProjects(Model model) {
         model.addAttribute("projects", projectRepository.findAll());
         return "project-list";
-    }   
-    
+    }
+
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("project", new ProductProject());
@@ -54,6 +65,7 @@ public class ProjectController {
 
         model.addAttribute("project", project);
         model.addAttribute("referenceImages", referenceImageRepository.findByProject(project));
+        model.addAttribute("generatedImages", generatedImageRepository.findByProject(project));
         return "project-detail";
     }
 
@@ -79,6 +91,27 @@ public class ProjectController {
 
             referenceImageRepository.save(ref);
         }
+
+        return "redirect:/projects/" + id;
+    }
+
+    @PostMapping("/{id}/generate")
+    public String generateImages(@PathVariable Long id) {
+        ProductProject project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        var refs = referenceImageRepository.findByProject(project);
+        String prompt = promptBuilderService.buildPrompt(project, refs);
+
+        GeneratedImage generatedImage = new GeneratedImage();
+        generatedImage.setProject(project);
+        generatedImage.setPromptUsed(prompt);
+        generatedImage.setStylePreset(project.getStylePreset());
+        generatedImage.setStatus(GenerationStatus.PENDING);
+        generatedImage.setProviderRequestId("demo-request-" + System.currentTimeMillis());
+        generatedImage.setFilePath(null);
+
+        generatedImageRepository.save(generatedImage);
 
         return "redirect:/projects/" + id;
     }

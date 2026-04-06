@@ -2,41 +2,118 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Create Project</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f7f7f8;
+            color: #222;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .actions {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #0a58ca;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav {
+            margin-bottom: 18px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #0a58ca;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-<h1>Create Project</h1>
-
-<form action="/projects" method="post" th:object="${project}">
-    <div>
-        <label>Project Name</label>
-        <input type="text" th:field="*{projectName}" />
+<div class="container">
+    <div class="nav">
+        <a href="/projects">← Back to Projects</a>
     </div>
 
-    <div>
-        <label>Product Name</label>
-        <input type="text" th:field="*{productName}" />
-    </div>
+    <h1>Create Project</h1>
 
-    <div>
-        <label>Category</label>
-        <select th:field="*{productCategory}">
-            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
-        </select>
-    </div>
+    <form action="/projects" method="post" th:object="${project}">
+        <div class="field">
+            <label>Project Name</label>
+            <input type="text" th:field="*{projectName}" />
+        </div>
 
-    <div>
-        <label>Style</label>
-        <select th:field="*{stylePreset}">
-            <option th:each="s : ${styles}" th:value="${s}" th:text="${s}"></option>
-        </select>
-    </div>
+        <div class="field">
+            <label>Product Name</label>
+            <input type="text" th:field="*{productName}" />
+        </div>
 
-    <div>
-        <label>Notes</label>
-        <textarea th:field="*{notes}"></textarea>
-    </div>
+        <div class="field">
+            <label>Category</label>
+            <select th:field="*{productCategory}">
+                <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
+            </select>
+        </div>
 
-    <button type="submit">Create</button>
-</form>
+        <div class="field">
+            <label>Style</label>
+            <select th:field="*{stylePreset}">
+                <option th:each="s : ${styles}" th:value="${s}" th:text="${s}"></option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Notes</label>
+            <textarea th:field="*{notes}"></textarea>
+        </div>
+
+        <div class="actions">
+            <button type="submit">Create Project</button>
+        </div>
+    </form>
+</div>
 </body>
 </html>
