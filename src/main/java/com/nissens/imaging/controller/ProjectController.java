@@ -3,16 +3,19 @@ package com.nissens.imaging.controller;
 import com.nissens.imaging.entity.GenerateImagesForm;
 import com.nissens.imaging.entity.GeneratedImage;
 import com.nissens.imaging.entity.GenerationStatus;
+import com.nissens.imaging.entity.ProductAnalysis;
 import com.nissens.imaging.entity.ProductCategory;
 import com.nissens.imaging.entity.ProductProject;
 import com.nissens.imaging.entity.ReferenceImage;
 import com.nissens.imaging.entity.StylePreset;
 import com.nissens.imaging.repository.GeneratedImageRepository;
+import com.nissens.imaging.repository.ProductAnalysisRepository;
 import com.nissens.imaging.repository.ProductProjectRepository;
 import com.nissens.imaging.repository.ReferenceImageRepository;
 import com.nissens.imaging.service.DemoGenerationService;
 import com.nissens.imaging.service.FileCleanupService;
 import com.nissens.imaging.service.FileStorageService;
+import com.nissens.imaging.service.ProductAnalysisService;
 import com.nissens.imaging.service.PromptBuilderService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,30 +31,36 @@ public class ProjectController {
     private final ProductProjectRepository projectRepository;
     private final ReferenceImageRepository referenceImageRepository;
     private final GeneratedImageRepository generatedImageRepository;
+    private final ProductAnalysisRepository productAnalysisRepository;
     private final FileStorageService fileStorageService;
     private final PromptBuilderService promptBuilderService;
     private final DemoGenerationService demoGenerationService;
     private final FileCleanupService fileCleanupService;
+    private final ProductAnalysisService productAnalysisService;
 
     public ProjectController(ProductProjectRepository projectRepository,
                              ReferenceImageRepository referenceImageRepository,
                              GeneratedImageRepository generatedImageRepository,
+                             ProductAnalysisRepository productAnalysisRepository,
                              FileStorageService fileStorageService,
                              PromptBuilderService promptBuilderService,
                              DemoGenerationService demoGenerationService,
-                             FileCleanupService fileCleanupService) {
+                             FileCleanupService fileCleanupService,
+                             ProductAnalysisService productAnalysisService) {
         this.projectRepository = projectRepository;
         this.referenceImageRepository = referenceImageRepository;
         this.generatedImageRepository = generatedImageRepository;
+        this.productAnalysisRepository = productAnalysisRepository;
         this.fileStorageService = fileStorageService;
         this.promptBuilderService = promptBuilderService;
         this.demoGenerationService = demoGenerationService;
         this.fileCleanupService = fileCleanupService;
+        this.productAnalysisService = productAnalysisService;
     }
 
     @GetMapping
     public String listProjects(Model model) {
-        model.addAttribute("projects", projectRepository.findAll());
+        model.addAttribute("projects", projectRepository.findAllByOrderByCreatedAtDesc());
         return "project-list";
     }
 
@@ -77,6 +86,7 @@ public class ProjectController {
         model.addAttribute("project", project);
         model.addAttribute("referenceImages", referenceImageRepository.findByProject(project));
         model.addAttribute("generatedImages", generatedImageRepository.findByProject(project));
+        model.addAttribute("productAnalysis", productAnalysisRepository.findByProject(project).orElse(null));
         model.addAttribute("generateForm", defaultGenerateForm(project));
         model.addAttribute("styles", StylePreset.values());
         return "project-detail";
@@ -108,6 +118,21 @@ public class ProjectController {
         return "redirect:/projects/" + id;
     }
 
+    @PostMapping("/{id}/analyze")
+    public String analyzeProduct(@PathVariable Long id) {
+        ProductProject project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        List<ReferenceImage> refs = referenceImageRepository.findByProject(project);
+
+        productAnalysisRepository.findByProject(project).ifPresent(productAnalysisRepository::delete);
+
+        ProductAnalysis analysis = productAnalysisService.analyze(project, refs);
+        productAnalysisRepository.save(analysis);
+
+        return "redirect:/projects/" + id;
+    }
+
     @PostMapping("/{id}/generate")
     public String generateImages(@PathVariable Long id,
                                  @ModelAttribute("generateForm") GenerateImagesForm generateForm) {
@@ -129,7 +154,8 @@ public class ProjectController {
                 : project.getStylePreset();
 
         for (int i = 0; i < imageCount; i++) {
-            String prompt = promptBuilderService.buildPrompt(project, refs, requestedStyle);
+            ProductAnalysis analysis = productAnalysisRepository.findByProject(project).orElse(null);
+            String prompt = promptBuilderService.buildPrompt(project, refs, requestedStyle, analysis);
 
             String demoOutputPath = null;
             if (!refs.isEmpty()) {
@@ -152,6 +178,28 @@ public class ProjectController {
         }
 
         return "redirect:/projects/" + id;
+    }
+
+    @PostMapping("/{projectId}/delete")
+    public String deleteProject(@PathVariable Long projectId) {
+        ProductProject project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        for (ReferenceImage image : referenceImageRepository.findByProject(project)) {
+            fileCleanupService.deleteIfExists(image.getFilePath());
+        }
+
+        for (GeneratedImage image : generatedImageRepository.findByProject(project)) {
+            fileCleanupService.deleteIfExists(image.getFilePath());
+        }
+
+        fileCleanupService.deleteDirectoryIfExists("uploads/references/project-" + projectId);
+        fileCleanupService.deleteDirectoryIfExists("uploads/generated/project-" + projectId);
+
+        productAnalysisRepository.findByProject(project).ifPresent(productAnalysisRepository::delete);
+        projectRepository.delete(project);
+
+        return "redirect:/projects";
     }
 
     @PostMapping("/{projectId}/reference-images/{imageId}/delete")

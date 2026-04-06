@@ -117,6 +117,7 @@
 
             <div class="project-content">
                 <h3 th:text="${project.projectName}">Project Name</h3>
+                <p><strong>Created:</strong> <span th:text="${project.createdAt}"></span></p>
                 <p><strong>Product:</strong> <span th:text="${project.productName}"></span></p>
                 <p><strong>Category:</strong> <span th:text="${project.productCategory}"></span></p>
                 <p><strong>Style:</strong> <span th:text="${project.stylePreset}"></span></p>
