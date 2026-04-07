@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Catalog Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f7f7f8;
+            color: #222;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            padding: 14px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="section">
+    <h1>Catalog Structure Test</h1>
+    <p>This page tests category config and structured prompt generation.</p>
+</div>
+
+<div class="section">
+    <h2>Loaded Categories</h2>
+    <ul>
+        <li th:each="cat : ${categories}">
+            <strong th:text="${cat.name}"></strong>
+            <ul>
+                <li th:each="sub : ${cat.subcategories}" th:text="${sub.name}"></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Jewellery → Nose Rings Prompt</h2>
+    <pre th:text="${jewelleryPrompt}"></pre>
+</div>
+
+<div class="section">
+    <h2>Disposables → Paper Cups Prompt</h2>
+    <pre th:text="${disposablesPrompt}"></pre>
+</div>
+
+</body>
+</html>
