@@ -2,39 +2,68 @@ package com.nissens.imaging.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
+@Table(name = "product_project")
 public class ProductProject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String projectName;
+
+    @Column
     private String productName;
 
-    @Enumerated(EnumType.STRING)
-    private ProductCategory productCategory;
+    @Column
+    private String productCategory;
 
-    @Column(length = 4000)
+    @Column
+    private String stylePreset;
+
+    @Column(nullable = false)
+    private String category;
+
+    @Column
+    private String subcategory;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String structuredInputsJson;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Enumerated(EnumType.STRING)
-    private StylePreset stylePreset;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String analysisSummary;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String generationPrompt;
+
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReferenceImage> referenceImages = new ArrayList<>();
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GeneratedImage> generatedImages = new ArrayList<>();
+    public ProductProject() {
+    }
 
     @PrePersist
     public void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -45,80 +74,99 @@ public class ProductProject {
         return projectName;
     }
 
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
     public String getProductName() {
         return productName;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public ProductCategory getProductCategory() {
+    public String getProductCategory() {
         return productCategory;
     }
 
-    public void setProductCategory(ProductCategory productCategory) {
-        this.productCategory = productCategory;
+    public String getStylePreset() {
+        return stylePreset;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getSubcategory() {
+        return subcategory;
+    }
+
+    public String getStructuredInputsJson() {
+        return structuredInputsJson;
     }
 
     public String getNotes() {
         return notes;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public String getAnalysisSummary() {
+        return analysisSummary;
     }
 
-    public StylePreset getStylePreset() {
-        return stylePreset;
-    }
-
-    public void setStylePreset(StylePreset stylePreset) {
-        this.stylePreset = stylePreset;
+    public String getGenerationPrompt() {
+        return generationPrompt;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public List<ReferenceImage> getReferenceImages() {
-        return referenceImages;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setReferenceImages(List<ReferenceImage> referenceImages) {
-        this.referenceImages = referenceImages;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public List<GeneratedImage> getGeneratedImages() {
-        return generatedImages;
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 
-    public void setGeneratedImages(List<GeneratedImage> generatedImages) {
-        this.generatedImages = generatedImages;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
-    @Transient
-    public String getCoverImagePath() {
-        if (referenceImages != null && !referenceImages.isEmpty()) {
-            for (ReferenceImage img : referenceImages) {
-                if (img.getWebPath() != null && !img.getWebPath().isBlank()) {
-                    return img.getWebPath();
-                }
-            }
-        }
+    public void setProductCategory(String productCategory) {
+        this.productCategory = productCategory;
+    }
 
-        if (generatedImages != null && !generatedImages.isEmpty()) {
-            for (GeneratedImage img : generatedImages) {
-                if (img.getWebPath() != null && !img.getWebPath().isBlank()) {
-                    return img.getWebPath();
-                }
-            }
-        }
+    public void setStylePreset(String stylePreset) {
+        this.stylePreset = stylePreset;
+    }
 
-        return "";
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setSubcategory(String subcategory) {
+        this.subcategory = subcategory;
+    }
+
+    public void setStructuredInputsJson(String structuredInputsJson) {
+        this.structuredInputsJson = structuredInputsJson;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public void setAnalysisSummary(String analysisSummary) {
+        this.analysisSummary = analysisSummary;
+    }
+
+    public void setGenerationPrompt(String generationPrompt) {
+        this.generationPrompt = generationPrompt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

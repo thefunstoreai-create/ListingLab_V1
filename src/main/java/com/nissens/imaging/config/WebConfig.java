@@ -1,6 +1,5 @@
 package com.nissens.imaging.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -11,15 +10,12 @@ import java.nio.file.Paths;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.storage.root:uploads}")
-    private String storageRoot;
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadPath = Paths.get(storageRoot).toAbsolutePath().normalize();
-        String location = uploadPath.toUri().toString();
+        Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+        String uploadUri = uploadDir.toUri().toString();
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(location);
+                .addResourceLocations(uploadUri);
     }
 }

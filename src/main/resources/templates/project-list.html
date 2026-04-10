@@ -20,6 +20,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .topbar a {
@@ -37,31 +39,34 @@
         .project-card {
             background: white;
             border-radius: 12px;
-            overflow: hidden;
+            padding: 18px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
 
-        .project-image {
+        .project-thumb {
             width: 100%;
             height: 220px;
             object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 14px;
             display: block;
-            background: #e9ecef;
+            background: #efefef;
         }
 
-        .project-image-placeholder {
+        .thumb-placeholder {
             width: 100%;
             height: 220px;
+            border-radius: 10px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #e9ecef;
+            background: #efefef;
             color: #666;
             font-size: 14px;
-        }
-
-        .project-content {
-            padding: 18px;
+            text-align: center;
+            padding: 12px;
+            box-sizing: border-box;
         }
 
         .project-card h3 {
@@ -95,35 +100,35 @@
     <div class="topbar">
         <h1>All Projects</h1>
         <div>
-            <a href="/">Home</a> |
-            <a href="/projects/new">+ Create New Project</a>
+            <a th:href="@{/}">Home</a> |
+            <a th:href="@{/projects/new}">+ Create New Project</a>
         </div>
     </div>
 
-    <div th:if="${#lists.isEmpty(projects)}" class="empty-state">
+    <div class="empty-state" th:if="${#lists.isEmpty(projects)}">
         <p>No projects yet.</p>
     </div>
 
-    <div class="project-grid" th:if="${!#lists.isEmpty(projects)}">
+    <div class="project-grid" th:unless="${#lists.isEmpty(projects)}">
         <div class="project-card" th:each="project : ${projects}">
-            <img class="project-image"
-                 th:if="${project.coverImagePath != ''}"
-                 th:src="${project.coverImagePath}"
+            <img class="project-thumb"
+                 th:if="${projectThumbnailMap != null and projectThumbnailMap[project.id] != null}"
+                 th:src="${projectThumbnailMap[project.id]}"
                  th:alt="${project.projectName}" />
 
-            <div class="project-image-placeholder" th:if="${project.coverImagePath == ''}">
-                No image yet
+            <div class="thumb-placeholder"
+                 th:if="${projectThumbnailMap == null or projectThumbnailMap[project.id] == null}">
+                No thumbnail yet
             </div>
 
-            <div class="project-content">
-                <h3 th:text="${project.projectName}">Project Name</h3>
-                <p><strong>Created:</strong> <span th:text="${project.createdAt}"></span></p>
-                <p><strong>Product:</strong> <span th:text="${project.productName}"></span></p>
-                <p><strong>Category:</strong> <span th:text="${project.productCategory}"></span></p>
-                <p><strong>Style:</strong> <span th:text="${project.stylePreset}"></span></p>
-                <p><strong>Notes:</strong> <span th:text="${project.notes}"></span></p>
-                <a th:href="@{'/projects/' + ${project.id}}">Open Project</a>
-            </div>
+            <h3 th:text="${project.projectName}">Project Name</h3>
+            <p><strong>Created:</strong> <span th:text="${project.createdAt}">Created</span></p>
+            <p><strong>Product:</strong> <span th:text="${project.productName}">Product</span></p>
+            <p><strong>Legacy Product Category:</strong> <span th:text="${project.productCategory}">Legacy Category</span></p>
+            <p><strong>Style:</strong> <span th:text="${project.stylePreset}">Style</span></p>
+            <p><strong>Catalog Category:</strong> <span th:text="${project.category}">Catalog Category</span></p>
+            <p><strong>Subcategory:</strong> <span th:text="${project.subcategory}">Subcategory</span></p>
+            <a th:href="@{/projects/{id}(id=${project.id})}">Open Project</a>
         </div>
     </div>
 </div>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Project Detail</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      background: #f8f9fa;
+    }
+
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .meta-row {
+      margin-bottom: 10px;
+    }
+
+    .meta-label {
+      font-weight: 700;
+      display: inline-block;
+      min-width: 160px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      text-align: left;
+      padding: 10px;
+    }
+
+    th {
+      background: #f1f1f1;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .actions a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      color: #222;
+      background: #fff;
+    }
+
+    .actions a:hover {
+      background: #f3f3f3;
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+  <h1 th:text="${project.projectName}">Project Detail</h1>
+
+  <div class="card">
+    <div class="meta-row">
+      <span class="meta-label">Category:</span>
+      <span th:text="${project.category}">Category</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">Subcategory:</span>
+      <span th:text="${project.subcategory}">Subcategory</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">Created:</span>
+      <span th:text="${project.createdAt}">Created At</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">Updated:</span>
+      <span th:text="${project.updatedAt}">Updated At</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Structured Product Inputs</h3>
+
+    <table th:if="${!#maps.isEmpty(structuredInputMap)}">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="entry : ${structuredInputMap}">
+          <td th:text="${entry.key}">field</td>
+          <td th:text="${entry.value}">value</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p th:if="${#maps.isEmpty(structuredInputMap)}">
+      No structured inputs saved yet.
+    </p>
+  </div>
+
+  <div class="actions">
+    <a th:href="@{/projects/{id}/edit(id=${project.id})}">Edit</a>
+    <a th:href="@{/projects}">Back to Projects</a>
+  </div>
+</div>
+</body>
+</html>

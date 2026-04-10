@@ -4,10 +4,24 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryConfigService {
 
+    public Optional<CategoryDefinition> findCategoryByName(String categoryName) {
+        return getAllCategories().stream()
+                .filter(c -> c.getName().equalsIgnoreCase(categoryName))
+                .findFirst();
+}
+
+    public Optional<SubcategoryDefinition> findSubcategory(String categoryName, String subcategoryName) {
+        return findCategoryByName(categoryName)
+                .flatMap(category -> category.getSubcategories().stream()
+                .filter(s -> s.getName().equalsIgnoreCase(subcategoryName))
+                .findFirst());
+}
+    
     public List<CategoryDefinition> getAllCategories() {
         return List.of(
                 buildJewelleryCategory(),

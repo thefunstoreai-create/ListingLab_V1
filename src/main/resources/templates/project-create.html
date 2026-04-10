@@ -11,7 +11,7 @@
         }
 
         .container {
-            max-width: 700px;
+            max-width: 760px;
             margin: 0 auto;
             background: white;
             padding: 28px;
@@ -43,7 +43,7 @@
         }
 
         textarea {
-            min-height: 100px;
+            min-height: 110px;
             resize: vertical;
         }
 
@@ -78,12 +78,12 @@
         <a href="/projects">← Back to Projects</a>
     </div>
 
-    <h1>Create Project</h1>
+    <h1 th:text="${project.id == null ? 'Create Project' : 'Edit Project'}">Create Project</h1>
 
-    <form action="/projects" method="post" th:object="${project}">
+    <form th:action="${project.id == null} ? @{/projects} : @{/projects/{id}(id=${project.id})}" method="post" th:object="${project}">
         <div class="field">
             <label>Project Name</label>
-            <input type="text" th:field="*{projectName}" />
+            <input type="text" th:field="*{projectName}" required />
         </div>
 
         <div class="field">
@@ -92,17 +92,31 @@
         </div>
 
         <div class="field">
-            <label>Category</label>
-            <select th:field="*{productCategory}">
-                <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
+            <label>Catalog Category</label>
+            <select th:field="*{category}" required>
+                <option value="">Select a category</option>
+                <option th:each="cat : ${catalogCategories}" th:value="${cat.name}" th:text="${cat.name}"></option>
             </select>
         </div>
 
         <div class="field">
-            <label>Style</label>
-            <select th:field="*{stylePreset}">
-                <option th:each="s : ${styles}" th:value="${s}" th:text="${s}"></option>
-            </select>
+            <label>Subcategory</label>
+            <input type="text" th:field="*{subcategory}" placeholder="Example: Rings, Nose Rings, Paper Cups" />
+        </div>
+
+        <div class="field">
+            <label>Legacy Product Category</label>
+            <input type="text" th:field="*{productCategory}" placeholder="Optional legacy field" />
+        </div>
+
+        <div class="field">
+            <label>Style Preset</label>
+            <input type="text" th:field="*{stylePreset}" placeholder="Example: WHOLESALE" />
+        </div>
+
+        <div class="field">
+            <label>Structured Inputs JSON</label>
+            <textarea th:field="*{structuredInputsJson}" placeholder='{"material":"Stainless Steel","colour":"Silver","style":"Minimalist","target":"Retail"}'></textarea>
         </div>
 
         <div class="field">
@@ -111,7 +125,7 @@
         </div>
 
         <div class="actions">
-            <button type="submit">Create Project</button>
+            <button type="submit" th:text="${project.id == null ? 'Create Project' : 'Save Changes'}">Create Project</button>
         </div>
     </form>
 </div>
